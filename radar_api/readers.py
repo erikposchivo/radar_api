@@ -69,11 +69,25 @@ def check_software_availability(software, conda_package):
     return decorator
 
 
+def read_mch_datatree(filepath):
+    import pyart
+    from radar_api.utils.xradar import get_mch_datatree_from_pyart
+    
+    radar_obj = pyart.aux_io.metranet_reader.read_metranet(filepath, reader="C")
+    dt = get_mch_datatree_from_pyart(radar_obj)
+    return dt
+
+
+
 def get_xradar_datatree_reader(network, product=None):
     """Return the xradar datatree reader."""
     import xradar.io
-
     product = check_product(network, product=product)
+    
+    if network=='MCH_LTE':
+        func=read_mch_datatree
+        return func 
+    
     xradar_reader_name = get_product_info(network, product)["xradar_reader"]
     if xradar_reader_name is None:
         raise NotImplementedError(f"No xradar reader is yet available for {product} product of network {network}.")
